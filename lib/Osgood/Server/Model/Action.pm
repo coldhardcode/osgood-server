@@ -1,0 +1,26 @@
+package Osgood::Server::Model::Action;
+use strict;
+
+=head1 NAME
+
+Osgood::Server::Model::Action
+
+=head1 DESCRIPTION
+
+Actions are a component of events. The "verb" of the event.
+
+=head1 DATABASE
+
+See 'actions' table for all methods. 
+
+=cut
+
+use base qw/DBIx::Class/;
+
+__PACKAGE__->load_components(qw/PK::Auto Core/);
+__PACKAGE__->table('actions');
+__PACKAGE__->add_columns(qw/action_id name/);
+__PACKAGE__->set_primary_key('action_id');
+__PACKAGE__->has_many(events => 'Osgood::Server::Model::Event', 'action_id' );
+
+1;
