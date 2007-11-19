@@ -32,43 +32,70 @@ Catalyst Controller.
 sub list : Local {
 	my ($self, $c) = @_;
 
-	# initialize return value
-	@{$c->stash->{event_list}} = [];
-
-	# prepare search query
+	# init search hash
 	my $search_hash = {};
-	my $join_hash = {join => []};
+
+	# build search hash
+	my $join_array = [];
 	my $object = $c->req->params->{'object'};
 	if (defined($object)) {
+		$object =~ s/\'//g;
 		$search_hash->{'object.name'} = $object;
-		push (@{$join_hash->{join}}, 'object');
+		push (@{$join_array}, 'object');
 	}
 	my $action = $c->req->params->{'action'};
 	if (defined($action)) {
+		$action =~ s/\'//g;
 		$search_hash->{'action.name'} = $action;
-		push (@{$join_hash->{join}}, 'action');
+		push (@{$join_array}, 'action');
 	}
-	my $id     = $c->req->params->{'id'};
-	my $date   = $c->req->params->{'event_date'};
-	#DEBUGGING
-	@{$c->stash->{search_hash}} = $search_hash;
-	@{$c->stash->{join_hash}} = $join_hash;
+	my $id = $c->req->params->{'id'};
+	if (defined($id)) {
+		$id =~ s/\'//g;
+		$search_hash->{'event_id'} = { '>' => $id};
+	}
+	my $date = $c->req->params->{'date'};
+	if (defined($date)) {
+		$date =~ s/\'//g;
+		$search_hash->{'event_date'} = { '>' => $date};
+	}
+
 	if ((keys %{$search_hash}) <= 0) {
 		$c->stash->{error} = "Error no query parameters";
 		return;
 	}
+
 	my $query = [$search_hash];
-	if (scalar @{$join_hash->{join}} > 0) {
-		push @{$query},  $join_hash;
+	# if set, hook hon join array
+	if (scalar @{$join_array} > 0) {
+		@{$query}[1] = {'join' => $join_array};
 	}
-	my $events = $c->model('OsgoodDB::Event')->search({$search_hash, $join_hash});
+
+	my $net_list = new Osgood::EventList;
+	my $events = $c->model('OsgoodDB::Event')->search(@{$query});
 	if (defined($events)) {
+		my $count = 0;
 		while (my $event = $events->next()) {
-			push (@{$c->stash->{event_list}}, $event->get_hash());
+			# convert db event to net event
+			my $net_event = new Osgood::Event($event->get_hash());
+			# add net event to list
+			$net_list->add_to_events($net_event);
+			$count++;
+		}
+
+		#FIXME - would be better if serializer could handle null list 
+		#FIXME - also doesn't client want record id? i'm returning it, 
+		#    but it's not appearing in the xml output
+		if ($count > 0) {
+			# serialize the list
+			my $ser = new Osgood::EventList::Serializer(list => $net_list);
+			# set response type
+			$c->response->content_type('text/xml');
+			# return xml
+			$c->response->body($ser->serialize());
 		}
 	} 
-
-	$c->forward('Osgood::Server::View::REST');
+	#FIXME would prefer to move serialize down here, and deal with null list
 }
 
 =head2 show 
