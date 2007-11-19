@@ -47,12 +47,9 @@ sub get_hash {
 	$self_hash->{'params'} = ();
 
 	my $params = $self->parameters();
-	# iterate over parameters
+	# iterate over parameters and add to param hash
 	while (my $param = $params->next()) {
-		push(@{$self_hash->{'params'}},
-				{ name => $param->name(),
-				  value => $param->value()}
-		);
+		$self_hash->{'params'}->{$param->name()} = $param->value();
 	}
 
 	return $self_hash;

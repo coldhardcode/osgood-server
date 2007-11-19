@@ -7,7 +7,9 @@ use base 'Catalyst::Controller';
 use Carp;
 
 use Greenspan::Date;
-use Osgood::Client::Event;
+use Osgood::Event;
+use Osgood::EventList;
+use Osgood::EventList::Serializer;
 
 
 =head1 NAME
@@ -85,15 +87,20 @@ sub show : Local {
 
 	my $event = $c->model('OsgoodDB::Event')->find($id);
 
-	if (defined($event)) {
-		push (@{$c->stash->{event_list}}, $event->get_hash());
-	}
-
-	$c->forward('Osgood::Server::View::REST');
-
-	# FIXME - html output?
-	#$c->stash->{'pagetitle'} = 'Show Event';
-	#$c->stash->{'template'} = 'event/show.tmpl';
+	#FIXME - will capture this in a function
+	# how to wrap so query returns EventList?
+	# init list
+	my $net_list = new Osgood::EventList;
+	# convert db event to net event
+	my $net_event = new Osgood::Event($event->get_hash());
+	# add net event to list
+	$net_list->add_to_events($net_event);
+	# serialize the list
+	my $ser = new Osgood::EventList::Serializer(list => $net_list);
+	# set response type
+	$c->response->content_type('text/xml');
+	# return xml
+	$c->response->body($ser->serialize());
 }
 
 =head2 add 
