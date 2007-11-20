@@ -10,6 +10,7 @@ use Greenspan::Date;
 use Osgood::Event;
 use Osgood::EventList;
 use Osgood::EventList::Serializer;
+use Osgood::EventList::Deserializer;
 
 
 =head1 NAME
@@ -28,7 +29,6 @@ Catalyst Controller.
 
 =cut
 
-#FIXME complete this function
 sub list : Local {
 	my ($self, $c) = @_;
 
@@ -82,20 +82,14 @@ sub list : Local {
 			$net_list->add_to_events($net_event);
 			$count++;
 		}
-
-		#FIXME - would be better if serializer could handle null list 
-		#FIXME - also doesn't client want record id? i'm returning it, 
-		#    but it's not appearing in the xml output
-		if ($count > 0) {
-			# serialize the list
-			my $ser = new Osgood::EventList::Serializer(list => $net_list);
-			# set response type
-			$c->response->content_type('text/xml');
-			# return xml
-			$c->response->body($ser->serialize());
-		}
 	} 
-	#FIXME would prefer to move serialize down here, and deal with null list
+
+	# serialize the list
+	my $ser = new Osgood::EventList::Serializer(list => $net_list);
+	# set response type
+	$c->response->content_type('text/xml');
+	# return xml
+	$c->response->body($ser->serialize());
 }
 
 =head2 show 
@@ -114,8 +108,6 @@ sub show : Local {
 
 	my $event = $c->model('OsgoodDB::Event')->find($id);
 
-	#FIXME - will capture this in a function
-	# how to wrap so query returns EventList?
 	# init list
 	my $net_list = new Osgood::EventList;
 	# convert db event to net event
@@ -165,6 +157,12 @@ sub add : XMLRPC {
 		return { num_events => 0,
 			     error => "Error: missing parameter: list of events"};
 	}
+
+	# FIXME - this is what it should go to 
+	#my $des = new Osgood::EventList::Deserializer(xml => $xml);
+	#my $eList = $des->deserialize();
+	# FIXME - think we need a list iterator here
+	#END FIXME
 
 	if (ref($list) ne 'ARRAY') {
 		return { num_events => 0,

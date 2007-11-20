@@ -40,8 +40,8 @@ sub get_hash {
 	my $self_hash = ();
 
     # stash the event
-    $self_hash->{'event_id'} = $self->id();
-	$self_hash->{'event_date'} = $self->event_date->ymd;
+    $self_hash->{'id'} = $self->id();
+	$self_hash->{'date_occurred'} = $self->event_date();
 	$self_hash->{'object'} = $self->object->name();
 	$self_hash->{'action'} = $self->action->name();
 	$self_hash->{'params'} = ();
