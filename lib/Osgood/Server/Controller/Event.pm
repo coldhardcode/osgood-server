@@ -27,6 +27,30 @@ Catalyst Controller.
 
 =head2 list 
 
+Takes one or more query parameters and returns a list of events.  Parameters can be: 
+
+=over 
+
+=item "id"
+
+looks for all events with id greater than this number
+
+=item "date"
+
+looks for all events with date greater than this date
+
+=item "object"
+
+looks for all events with this object
+
+=item "action"
+
+looks for all events with this action
+
+=back 
+
+If fields are invalid, an error is returned. If no matching events are found, an emtpy list is returned. 
+
 =cut
 
 sub list : Local {
@@ -94,7 +118,7 @@ sub list : Local {
 
 =head2 show 
 
-take an id and return an event object, in xml
+Takes an id and returns an event list containing the matching event.
 
 =cut
 
@@ -124,14 +148,14 @@ sub show : Local {
 
 =head2 add 
 
- takes an xml event list, inserts each event into the database, and 
- returns the number of events inserted as a confirmation. 
- returns zero if any insert failed.
-
- Tested with: 
- http://bone:3000/event/add?xml=<eventlist><version>1</version><events><event><object>lauren</object><action>threwup</action><date_occurred>2007-11-12T00:00:00</date_occurred><params><param><name>sally</name><value>3</value></param><param><name>sue</name><value>4</value></param></params></event><event><object>cassanova</object><action>ran</action><date_occurred>2007-11-20T00:00:00</date_occurred></event></events></eventlist>
+Takes an xml event list. Inserts each event into the database, and 
+returns the number of events inserted as a confirmation. 
+Rolls back all changes and returns zero if any insert failed.
 
 =cut
+
+#Tested with: 
+# http://bone:3000/event/add?xml=<eventlist><version>1</version><events><event><object>lauren</object><action>threwup</action><date_occurred>2007-11-12T00:00:00</date_occurred><params><param><name>sally</name><value>3</value></param><param><name>sue</name><value>4</value></param></params></event><event><object>cassanova</object><action>ran</action><date_occurred>2007-11-20T00:00:00</date_occurred></event></events></eventlist>
 
 sub add : Local {
 	my ($self, $c) = @_;
@@ -215,14 +239,11 @@ sub add : Local {
 	$c->stash->{count} = $count;
 }
 
-=head2 default 
+=head2 add 
+
+Returns confirmation of controller.
 
 =cut
-
-#sub default : Private {
-#    my ( $self, $c ) = @_;
-#	$c->xmlrpc;
-#}
 
 sub index : Private {
     my ( $self, $c ) = @_;
