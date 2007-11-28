@@ -126,124 +126,109 @@ sub show : Local {
 
  takes an xml event list, inserts each event into the database, and 
  returns the number of events inserted as a confirmation. 
+ returns zero if any insert failed.
 
- an event list looks like: 
- [
-	{
-		action => <action_name>,
-		object => <object_name>,
-		event_date => <date>,
-		params => [
-			{
-				name=> <param_name>,
-				value=> <param_value>
-			}
-		]
-	}
- ]
-
-used these for testing
-
- > XMLRPCsh.pl http://127.0.0.1:3000/event
- > event.add([{'action'=>'go there', 'object' => 'thing', 'event_date' => '2007-10-01'}])
- > event.add([{'action'=>'change address', 'object'=>'customer', 'event_date'=>'2007-09-09', 'params' => [{'name'=>'street', 'value'=>'123 street st'}, {'name'=>'country', 'value'=>'US'}]}])
+ Tested with: 
+ http://bone:3000/event/add?xml=<eventlist><version>1</version><events><event><object>lauren</object><action>threwup</action><date_occurred>2007-11-12T00:00:00</date_occurred><params><param><name>sally</name><value>3</value></param><param><name>sue</name><value>4</value></param></params></event><event><object>cassanova</object><action>ran</action><date_occurred>2007-11-20T00:00:00</date_occurred></event></events></eventlist>
 
 =cut
 
-sub add : XMLRPC {
-	my ($self, $c, $list) = @_;
+sub add : Local {
+	my ($self, $c) = @_;
 
-	if (!defined($list)) {
-		return { num_events => 0,
-			     error => "Error: missing parameter: list of events"};
+	my $xml = $c->req->param('xml');
+	if (!defined($xml)) {
+		$c->stash->{error} = "Error: missing parameter: xml list of events";
+		$c->stash->{count} = 0;
+		return; 
 	}
 
-	# FIXME - this is what it should go to 
-	#my $des = new Osgood::EventList::Deserializer(xml => $xml);
-	#my $eList = $des->deserialize();
-	# FIXME - think we need a list iterator here
-	#END FIXME
-
-	if (ref($list) ne 'ARRAY') {
-		return { num_events => 0,
-			     error => "Error: bad format: list of events"};
-	}
-
-	my $schema = $c->model('OsgoodDB')->schema();
 	# wrap the insert in a transaction. if any one fails, they all do
+	my $schema = $c->model('OsgoodDB')->schema();
 	$schema->txn_begin();
-	foreach my $item (@{$list}) {
+
+	my $des = new Osgood::EventList::Deserializer(xml => $xml);
+	my $eList = $des->deserialize();
+	my $iter = $eList->iterator();
+	# count events
+	my $count = 0;
+	my $error = undef;
+
+	while (($iter->has_next()) && (!defined($error))) {
+		my $xmlEvent = $iter->next();
+
 		# find or create the action
-		#FIXME - do item validation here. nicer.
-		if (!defined($item->{action})) {
-			$schema->txn_rollback();
-			return { num_events => 0,
-				     error => "Error: missing action", 
-				     event => $item };
-		}
 		my $action = $c->model('OsgoodDB::Action')->find_or_create({
-			   	name => $item->{action}
+			   	name => $xmlEvent->{action}
 			});
 		if (!defined($action)) {
-			$schema->txn_rollback();
-			return { num_events => 0,
-				     error => "Error: bad action", 
-				     event => $item };
+			$error = "Error: bad action " . $xmlEvent->{action};
+			next;
 		}
 		# find or create the object
 		my $object = $c->model('OsgoodDB::Object')->find_or_create({
-			   	name => $item->{object}
+			   	name => $xmlEvent->{object}
 			});
 		if (!defined($object)) {
-			$schema->txn_rollback();
-			return { num_events => 0,
-				     error => "Error: bad object", 
-				     event => $item };
+			$error = "Error: bad object " . $xmlEvent->{object};
+			next;
 		}
-		my $event = $c->model('OsgoodDB::Event')->create({
+		# create event - this has to be a new thing. no find here. 
+		my $dbEvent = $c->model('OsgoodDB::Event')->create({
 			action_id => $action->id(),
 			object_id => $object->id(),
-			event_date => $item->{event_date}
+			event_date => $xmlEvent->{date_occurred}
 		});
-		if (!defined($event)) {
-			$schema->txn_rollback();
-			return { num_events => 0,
-				     error => "Error: bad event", 
-				     event => $item };
+		if (!defined($dbEvent)) {
+			$error = "Error: bad event " . $xmlEvent->{object} . " " . 
+					 $xmlEvent->{action} . " " . $xmlEvent->{date_occurred};
+			next;
 		}
-		foreach my $param (@{$item->{params}}) {
-			my $event_param = $c->model('OsgoodDB::EventParameter')->create({
-				event_id => $event->id(),
-				name => $param->{name},
-				value => $param->{value}
-			});
-			if (!defined($event_param)) {
-				$schema->txn_rollback();
-				return { num_events => 0,
-						 error => "Error: bad event parameter", 
-					     event => $item };
+		# add all params
+		if (defined($xmlEvent->{params})) {
+			foreach my $param_name (keys %{$xmlEvent->{params}}) {
+				my $event_param = $c->model('OsgoodDB::EventParameter')->create({
+					event_id => $dbEvent->id(),
+					name => $param_name,
+					value => $xmlEvent->{params}->{$param_name}
+				});
+				if (!defined($event_param)) {
+					$error = "Error: bad event parameter" .  $param_name . 
+							 " " .  $xmlEvent->{params}->{$param_name};
+				}
 			}
 		}
-	}
-	$schema->txn_commit();
 
-	return { 'num_events' => scalar(@{$list})};
+		# increment count of inserted events
+		$count++;
+	}
+
+	
+	if (defined($error)) {         # if error, rollback
+		$count = 0; # if error, count is zero. nothing inserted.
+		$schema->txn_rollback();
+	} else {					   # otherwise, commit
+		$schema->txn_commit();
+	}
+
+	$c->stash->{error} = $error;
+	$c->stash->{count} = $count;
 }
 
 =head2 default 
 
 =cut
 
-sub default : Private {
-    my ( $self, $c ) = @_;
-	$c->xmlrpc;
-}
-
-#sub index : Private {
+#sub default : Private {
 #    my ( $self, $c ) = @_;
-#
-#    $c->response->body('Matched Osgood::Server::Controller::Event in Event.');
+#	$c->xmlrpc;
 #}
+
+sub index : Private {
+    my ( $self, $c ) = @_;
+
+    $c->response->body('Matched Osgood::Server::Controller::Event in Event.');
+}
 
 
 
