@@ -81,7 +81,7 @@ sub list : Local {
 	my $date = $c->req->params->{'date'};
 	if (defined($date)) {
 		$date =~ s/\'//g;
-		$search_hash->{'event_date'} = { '>' => $date};
+		$search_hash->{'date_occurred'} = { '>' => $date};
 	}
 
 	if ((keys %{$search_hash}) <= 0) {
@@ -134,10 +134,14 @@ sub show : Local {
 
 	# init list
 	my $net_list = new Osgood::EventList;
-	# convert db event to net event
-	my $net_event = new Osgood::Event($event->get_hash());
-	# add net event to list
-	$net_list->add_to_events($net_event);
+
+	if (defined($event)) {
+		# convert db event to net event
+		my $net_event = new Osgood::Event($event->get_hash());
+		# add net event to list
+		$net_list->add_to_events($net_event);
+	}
+
 	# serialize the list
 	my $ser = new Osgood::EventList::Serializer(list => $net_list);
 	# set response type
@@ -201,7 +205,7 @@ sub add : Local {
 		my $dbEvent = $c->model('OsgoodDB::Event')->create({
 			action_id => $action->id(),
 			object_id => $object->id(),
-			event_date => $xmlEvent->{date_occurred}
+			date_occurred => $xmlEvent->{date_occurred}
 		});
 		if (!defined($dbEvent)) {
 			$error = "Error: bad event " . $xmlEvent->{object} . " " . 

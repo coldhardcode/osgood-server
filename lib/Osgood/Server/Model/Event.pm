@@ -19,7 +19,7 @@ use base qw/DBIx::Class/;
 
 __PACKAGE__->load_components(qw/PK::Auto Core/);
 __PACKAGE__->table('events');
-__PACKAGE__->add_columns(qw/event_id object_id action_id event_date/);
+__PACKAGE__->add_columns(qw/event_id object_id action_id date_occurred/);
 __PACKAGE__->set_primary_key('event_id');
 __PACKAGE__->has_many(parameters => 'Osgood::Server::Model::EventParameter', 'event_id' );
 __PACKAGE__->add_relationship('object', 'Osgood::Server::Model::Object', 
@@ -30,7 +30,7 @@ __PACKAGE__->add_relationship('action', 'Osgood::Server::Model::Action',
 	{'foreign.action_id', 'self.action_id'}, 
 	{'accessor' => 'single'}
 );
-__PACKAGE__->inflate_column('event_date', { 
+__PACKAGE__->inflate_column('date_occurred', { 
 	inflate => sub { Greenspan::Date->from_mysql(shift()) },
 	deflate => sub { Greenspan::Date->to_mysql(shift()) },
 });
@@ -41,7 +41,7 @@ sub get_hash {
 
     # stash the event
     $self_hash->{'id'} = $self->id();
-	$self_hash->{'date_occurred'} = $self->event_date();
+	$self_hash->{'date_occurred'} = $self->date_occurred();
 	$self_hash->{'object'} = $self->object->name();
 	$self_hash->{'action'} = $self->action->name();
 	$self_hash->{'params'} = ();
