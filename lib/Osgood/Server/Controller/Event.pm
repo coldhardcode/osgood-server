@@ -56,47 +56,52 @@ If fields are invalid, an error is returned. If no matching events are found, an
 sub list : Local {
 	my ($self, $c) = @_;
 
-	# init search hash
-	my $search_hash = {};
-
-	# build search hash
-	my $join_array = [];
-	my $object = $c->req->params->{'object'};
-	if (defined($object)) {
-		$object =~ s/\'//g;
-		$search_hash->{'object.name'} = $object;
-		push (@{$join_array}, 'object');
-	}
-	my $action = $c->req->params->{'action'};
-	if (defined($action)) {
-		$action =~ s/\'//g;
-		$search_hash->{'action.name'} = $action;
-		push (@{$join_array}, 'action');
-	}
-	my $id = $c->req->params->{'id'};
-	if (defined($id)) {
-		$id =~ s/\'//g;
-		$search_hash->{'event_id'} = { '>' => $id};
-	}
-	my $date = $c->req->params->{'date'};
-	if (defined($date)) {
-		$date =~ s/\'//g;
-		$search_hash->{'date_occurred'} = { '>' => $date};
-	}
-
-	if ((keys %{$search_hash}) <= 0) {
+	# make sure there are parameters
+	if ((keys %{$c->req->params}) <= 0) {
 		$c->stash->{error} = "Error no query parameters";
 		return;
 	}
 
-	my $query = [$search_hash];
-	# if set, hook hon join array
-	if (scalar @{$join_array} > 0) {
-		@{$query}[1] = {'join' => $join_array};
+	# init resultset 
+	my $events = $c->model('OsgoodDB')->schema()->resultset('Event');
+
+	# order query by event_id
+	$events = $events->search( undef, {order_by => 'event_id' } );
+
+	# build search hash
+	my $object = $c->req->params->{'object'};
+	if (defined($object)) {
+		$object =~ s/\'//g;
+		$events = $events->search(
+			{'object.name' => $object}, 
+			{'join' => 'object'}
+		);
+	}
+	my $action = $c->req->params->{'action'};
+	if (defined($action)) {
+		$action =~ s/\'//g;
+		$events = $events->search(
+			{'action.name' => $action}, 
+			{'join' => 'action'}
+		);
+	}
+	my $id = $c->req->params->{'id'};
+	if (defined($id)) {
+		$id =~ s/\'//g;
+		$events = $events->search( {'event_id' => { '>' => $id } } );
+	}
+	my $date = $c->req->params->{'date'};
+	if (defined($date)) {
+		$date =~ s/\'//g;
+		$events = $events->search( {'date_occurred' => { '>' => $date } } );
+	}
+	my $limit = $c->req->params->{'limit'};
+	if (defined($limit)) {
+		$limit =~ s/\'//g;
+		$events = $events->search( undef, { rows => $limit } );
 	}
 
 	my $net_list = new Osgood::EventList;
-	my $events = $c->model('OsgoodDB::Event')->search(@{$query});
 	if (defined($events)) {
 		while (my $event = $events->next()) {
 			# convert db event to net event
@@ -186,42 +191,43 @@ sub add : Local {
 
 		# find or create the action
 		my $action = $c->model('OsgoodDB::Action')->find_or_create({
-			   	name => $xmlEvent->{action}
+			   	name => $xmlEvent->action()
 			});
 		if (!defined($action)) {
-			$error = "Error: bad action " . $xmlEvent->{action};
+			$error = "Error: bad action " . $xmlEvent->action();
 			next;
 		}
 		# find or create the object
 		my $object = $c->model('OsgoodDB::Object')->find_or_create({
-			   	name => $xmlEvent->{object}
+			   	name => $xmlEvent->object()
 			});
 		if (!defined($object)) {
-			$error = "Error: bad object " . $xmlEvent->{object};
+			$error = "Error: bad object " . $xmlEvent->object();
 			next;
 		}
 		# create event - this has to be a new thing. no find here. 
 		my $dbEvent = $c->model('OsgoodDB::Event')->create({
 			action_id => $action->id(),
 			object_id => $object->id(),
-			date_occurred => $xmlEvent->{date_occurred}
+			date_occurred => $xmlEvent->date_occurred()
 		});
 		if (!defined($dbEvent)) {
-			$error = "Error: bad event " . $xmlEvent->{object} . " " . 
-					 $xmlEvent->{action} . " " . $xmlEvent->{date_occurred};
+			$error = "Error: bad event " . $xmlEvent->object() . " " . 
+					 $xmlEvent->action() . " " . $xmlEvent->date_occurred();
 			next;
 		}
 		# add all params
-		if (defined($xmlEvent->{params})) {
-			foreach my $param_name (keys %{$xmlEvent->{params}}) {
+		my $params = $xmlEvent->params();
+		if (defined($params)) {
+			foreach my $param_name (keys %{$params}) {
 				my $event_param = $c->model('OsgoodDB::EventParameter')->create({
 					event_id => $dbEvent->id(),
 					name => $param_name,
-					value => $xmlEvent->{params}->{$param_name}
+					value => $params->{$param_name}
 				});
 				if (!defined($event_param)) {
 					$error = "Error: bad event parameter" .  $param_name . 
-							 " " .  $xmlEvent->{params}->{$param_name};
+							 " " .  $params->{$param_name};
 				}
 			}
 		}
