@@ -17,9 +17,18 @@ See 'events' table for all methods.
 
 use base qw/DBIx::Class/;
 
+use DateTime::TimeZone;
+
+my $tz = new DateTime::TimeZone(name => 'local');
+
 __PACKAGE__->load_components(qw/PK::Auto Core/);
 __PACKAGE__->table('events');
-__PACKAGE__->add_columns(qw/event_id object_id action_id date_occurred/);
+__PACKAGE__->add_columns(
+		event_id      => {data_type => 'bigint', is_auto_increment => 1}, 
+		object_id     => {data_type => 'bigint', is_foreign_key => 1}, 
+		action_id     => {data_type => 'bigint', is_foreign_key => 1}, 
+		date_occurred => {data_type => 'datetime' }
+	);
 __PACKAGE__->set_primary_key('event_id');
 __PACKAGE__->has_many(parameters => 'Osgood::Server::Model::EventParameter', 'event_id' );
 __PACKAGE__->add_relationship('object', 'Osgood::Server::Model::Object', 
@@ -31,8 +40,27 @@ __PACKAGE__->add_relationship('action', 'Osgood::Server::Model::Action',
 	{'accessor' => 'single'}
 );
 __PACKAGE__->inflate_column('date_occurred', { 
-	inflate => sub { Greenspan::Date->from_mysql(shift()) },
-	deflate => sub { Greenspan::Date->to_mysql(shift()) },
+	inflate => sub { 
+		my $str = shift(); 
+		unless($str) {
+			return undef;
+		}
+		my $dt = DateTime::Format::MySQL->parse_datetime($str);
+		if(defined($dt)) {
+			$dt->set_time_zone($tz);
+		} else {
+			return undef;
+		}
+	},
+	deflate => sub { 
+		my $dt = shift(); 
+
+		if(defined($dt)) {
+        	return DateTime::Format::MySQL->format_datetime($dt);
+    	} else {
+			return undef;
+		}
+	}
 });
 
 sub get_hash {

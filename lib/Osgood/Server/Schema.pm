@@ -3,9 +3,8 @@ use strict;
 
 use Osgood::Server::Database;
 
-# import YAML Loader/Dumper subclasses for inflate/deflate
-use Greenspan::Util::YAML::Loader;
-use Greenspan::Util::YAML::Dumper;
+use YAML::Dumper;
+use YAML::Loader;
 
 use base qw/DBIx::Class::Schema/;
 
@@ -33,7 +32,7 @@ sub connect
 sub inflate
 {
 	my $self = shift;
-	my $yaml = new Greenspan::Util::YAML::Loader $self;
+	my $yaml = new YAML::Loader $self;
 
 	return $yaml->load(@_);
 }
@@ -41,7 +40,7 @@ sub inflate
 sub deflate
 {
 	my $self = shift;
-	my $yaml = new Greenspan::Util::YAML::Dumper;
+	my $yaml = new YAML::Dumper;
 
 	return $yaml->dump(@_);
 }

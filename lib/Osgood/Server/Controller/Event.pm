@@ -6,7 +6,7 @@ use base 'Catalyst::Controller';
 
 use Carp;
 
-use Greenspan::Date;
+use DateTime::Format::MySQL;
 use Osgood::Event;
 use Osgood::EventList;
 use Osgood::EventList::Serializer;
@@ -98,13 +98,11 @@ sub list : Local {
 	my $net_list = new Osgood::EventList;
 	my $events = $c->model('OsgoodDB::Event')->search(@{$query});
 	if (defined($events)) {
-		my $count = 0;
 		while (my $event = $events->next()) {
 			# convert db event to net event
 			my $net_event = new Osgood::Event($event->get_hash());
 			# add net event to list
 			$net_list->add_to_events($net_event);
-			$count++;
 		}
 	} 
 
@@ -125,6 +123,7 @@ Takes an id and returns an event list containing the matching event.
 sub show : Local {
 	my ($self, $c, $id) = @_;
 
+	#FIXME - why'd i do this?
 	unless ($id) {
 		$c->stash->{'error'} = 'No id';
 		$c->detach('/event/list');
