@@ -240,11 +240,11 @@ sub add : Local {
 	if (defined($error)) {         # if error, rollback
 		$count = 0; # if error, count is zero. nothing inserted.
 		$schema->txn_rollback();
+		$c->stash->{error} = $error;
 	} else {					   # otherwise, commit
 		$schema->txn_commit();
 	}
 
-	$c->stash->{error} = $error;
 	$c->stash->{count} = $count;
 }
 
