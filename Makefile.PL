@@ -11,6 +11,7 @@ requires 'Osgood::EventList::Serializer';
 requires 'Osgood::EventList::Deserializer';
 
 requires 'Catalyst::Runtime' => '5.7011';
+requires 'Catalyst::Model::DBIC::Schema';
 requires 'Catalyst::Plugin::ConfigLoader';
 requires 'Catalyst::Plugin::Static::Simple';
 requires 'Catalyst::Action::RenderView';
