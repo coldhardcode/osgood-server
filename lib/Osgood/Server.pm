@@ -15,7 +15,7 @@ use Catalyst::Runtime '5.70';
 
 use Catalyst qw/-Debug ConfigLoader Static::Simple/;
 
-our $VERSION = '0.01';
+our $VERSION = '1.0.1';
 
 # Configure the application. 
 #
