@@ -90,10 +90,20 @@ sub list : Local {
 		$id =~ s/\'//g;
 		$events = $events->search( {'event_id' => { '>' => $id } } );
 	}
-	my $date = $c->req->params->{'date'};
-	if (defined($date)) {
-		$date =~ s/\'//g;
-		$events = $events->search( {'date_occurred' => { '>' => $date } } );
+	my $date_after = $c->req->params->{'date_after'};
+	if (defined($date_after)) {
+		$date_after =~ s/\'//g;
+		$events = $events->search( {'date_occurred' => { '>' => $date_after } } );
+	}
+	my $date_before = $c->req->params->{'date_before'};
+	if (defined($date_before)) {
+		$date_before =~ s/\'//g;
+		$events = $events->search( {'date_occurred' => { '<' => $date_before } } );
+	}
+	my $date_equals = $c->req->params->{'date_equals'};
+	if (defined($date_equals)) {
+		$date_equals =~ s/\'//g;
+		$events = $events->search( {'date_occurred' => $date_equals } );
 	}
 	my $limit = $c->req->params->{'limit'};
 	if (defined($limit)) {
