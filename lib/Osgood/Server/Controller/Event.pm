@@ -35,9 +35,13 @@ Takes one or more query parameters and returns a list of events.  Parameters can
 
 looks for all events with id greater than this number
 
-=item "date"
+=item "date_after"
 
 looks for all events with date greater than this date
+
+=item "date_before"
+
+looks for all events with a date less than this date
 
 =item "object"
 
