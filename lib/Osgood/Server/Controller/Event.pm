@@ -31,9 +31,9 @@ Takes one or more query parameters and returns a list of events.  Parameters can
 
 =over 
 
-=item "id"
+=item "action"
 
-looks for all events with id greater than this number
+looks for all events with this action
 
 =item "date_after"
 
@@ -43,13 +43,17 @@ looks for all events with date greater than this date
 
 looks for all events with a date less than this date
 
+=item "id"
+
+looks for all events with id greater than this number
+
+=item "limit"
+
+limits the number of events returns to the specified number
+
 =item "object"
 
 looks for all events with this object
-
-=item "action"
-
-looks for all events with this action
 
 =back 
 
