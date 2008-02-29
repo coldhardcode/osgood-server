@@ -1,5 +1,8 @@
 This file documents the revision history for Perl extension Osgood::Server.
 
+1.0.2  2008-02-29 10:48:00
+				- Remove some dependencies
+				- Release to world.
 1.0.1  2007-12-28 14:00:16
         - changed query parameters: removed "date" parameter, replaced with "date_before", "date_after", "date_equals"
         - updated documentation for above changes
