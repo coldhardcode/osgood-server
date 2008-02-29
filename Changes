@@ -1,5 +1,7 @@
 This file documents the revision history for Perl extension Osgood::Server.
 
+1.0.3  2008-02-29 10:56:00
+				- More release cleanup
 1.0.2  2008-02-29 10:48:00
 				- Remove some dependencies
 				- Release to world.
