@@ -1,8 +1,6 @@
 package Osgood::Server::Schema;
 use strict;
 
-use Osgood::Server::Database;
-
 use YAML::Dumper;
 use YAML::Loader;
 

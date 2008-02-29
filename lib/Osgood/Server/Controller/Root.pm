@@ -45,10 +45,12 @@ sub end : ActionClass('RenderView') {}
 
 Lauren O'Meara
 
-=head1 LICENSE
+=head1 COPYRIGHT AND LICENSE
 
-This library is free software, you can redistribute it and/or modify
-it under the same terms as Perl itself.
+Copyright 2008 by Magazines.com, LLC
+
+You can redistribute and/or modify this code under the same terms as Perl
+itself.
 
 =cut
 

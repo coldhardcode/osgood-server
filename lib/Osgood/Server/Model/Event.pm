@@ -24,24 +24,24 @@ my $tz = new DateTime::TimeZone(name => 'local');
 __PACKAGE__->load_components(qw/PK::Auto Core/);
 __PACKAGE__->table('events');
 __PACKAGE__->add_columns(
-		event_id      => {data_type => 'bigint', is_auto_increment => 1}, 
-		object_id     => {data_type => 'bigint', is_foreign_key => 1}, 
-		action_id     => {data_type => 'bigint', is_foreign_key => 1}, 
+		event_id      => {data_type => 'bigint', is_auto_increment => 1},
+		object_id     => {data_type => 'bigint', is_foreign_key => 1},
+		action_id     => {data_type => 'bigint', is_foreign_key => 1},
 		date_occurred => {data_type => 'datetime' }
 	);
 __PACKAGE__->set_primary_key('event_id');
 __PACKAGE__->has_many(parameters => 'Osgood::Server::Model::EventParameter', 'event_id' );
-__PACKAGE__->add_relationship('object', 'Osgood::Server::Model::Object', 
-	{'foreign.object_id', 'self.object_id'}, 
+__PACKAGE__->add_relationship('object', 'Osgood::Server::Model::Object',
+	{'foreign.object_id', 'self.object_id'},
 	{'accessor' => 'single'}
 );
-__PACKAGE__->add_relationship('action', 'Osgood::Server::Model::Action', 
-	{'foreign.action_id', 'self.action_id'}, 
+__PACKAGE__->add_relationship('action', 'Osgood::Server::Model::Action',
+	{'foreign.action_id', 'self.action_id'},
 	{'accessor' => 'single'}
 );
-__PACKAGE__->inflate_column('date_occurred', { 
-	inflate => sub { 
-		my $str = shift(); 
+__PACKAGE__->inflate_column('date_occurred', {
+	inflate => sub {
+		my $str = shift();
 		unless($str) {
 			return undef;
 		}
@@ -52,8 +52,8 @@ __PACKAGE__->inflate_column('date_occurred', {
 			return undef;
 		}
 	},
-	deflate => sub { 
-		my $dt = shift(); 
+	deflate => sub {
+		my $dt = shift();
 
 		if(defined($dt)) {
         	return DateTime::Format::MySQL->format_datetime($dt);
@@ -72,7 +72,7 @@ sub get_hash {
 	$self_hash->{'date_occurred'} = $self->date_occurred();
 	$self_hash->{'object'} = $self->object->name();
 	$self_hash->{'action'} = $self->action->name();
-	$self_hash->{'params'} = ();
+	$self_hash->{'params'} = {};
 
 	my $params = $self->parameters();
 	# iterate over parameters and add to param hash
@@ -83,4 +83,12 @@ sub get_hash {
 	return $self_hash;
 }
 
+=head1 COPYRIGHT AND LICENSE
+
+Copyright 2008 by Magazines.com, LLC
+
+You can redistribute and/or modify this code under the same terms as Perl
+itself.
+
+=cut
 1;

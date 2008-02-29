@@ -46,16 +46,20 @@ Osgood::Server - Catalyst based application
 
 =head1 SEE ALSO
 
-L<Osgood::Server::Controller::Root>, L<Catalyst>
+L<Osgood::Server::Controller::Root>, L<Catalyst>, L<Osgood::Client>
 
 =head1 AUTHOR
 
 Lauren O'Meara
 
-=head1 LICENSE
+Cory 'G' Watson <gphat@cpan.org>
 
-This library is free software, you can redistribute it and/or modify
-it under the same terms as Perl itself.
+=head1 COPYRIGHT AND LICENSE
+
+Copyright 2008 by Magazines.com, LLC
+
+You can redistribute and/or modify this code under the same terms as Perl
+itself.
 
 =cut
 

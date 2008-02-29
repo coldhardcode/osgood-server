@@ -27,4 +27,13 @@ __PACKAGE__->add_columns(
 );
 __PACKAGE__->set_primary_key('event_parameter_id');
 
+=head1 COPYRIGHT AND LICENSE
+
+Copyright 2008 by Magazines.com, LLC
+
+You can redistribute and/or modify this code under the same terms as Perl
+itself.
+
+=cut
+
 1;

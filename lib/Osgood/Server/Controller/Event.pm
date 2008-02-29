@@ -81,7 +81,7 @@ sub list : Local {
 	if (defined($object)) {
 		$object =~ s/\'//g;
 		$events = $events->search(
-			{'object.name' => $object}, 
+			{'object.name' => $object},
 			{'join' => 'object'}
 		);
 	}
@@ -89,7 +89,7 @@ sub list : Local {
 	if (defined($action)) {
 		$action =~ s/\'//g;
 		$events = $events->search(
-			{'action.name' => $action}, 
+			{'action.name' => $action},
 			{'join' => 'action'}
 		);
 	}
@@ -127,7 +127,7 @@ sub list : Local {
 			# add net event to list
 			$net_list->add_to_events($net_event);
 		}
-	} 
+	}
 
 	# serialize the list
 	my $ser = new Osgood::EventList::Serializer(list => $net_list);
@@ -190,7 +190,7 @@ sub add : Local {
 	if (!defined($xml)) {
 		$c->stash->{error} = "Error: missing parameter: xml list of events";
 		$c->stash->{count} = 0;
-		return; 
+		return;
 	}
 
 	# wrap the insert in a transaction. if any one fails, they all do
@@ -230,7 +230,7 @@ sub add : Local {
 			date_occurred => $xmlEvent->date_occurred()
 		});
 		if (!defined($dbEvent)) {
-			$error = "Error: bad event " . $xmlEvent->object() . " " . 
+			$error = "Error: bad event " . $xmlEvent->object() . " " .
 					 $xmlEvent->action() . " " . $xmlEvent->date_occurred();
 			next;
 		}
@@ -244,7 +244,7 @@ sub add : Local {
 					value => $params->{$param_name}
 				});
 				if (!defined($event_param)) {
-					$error = "Error: bad event parameter" .  $param_name . 
+					$error = "Error: bad event parameter" .  $param_name .
 							 " " .  $params->{$param_name};
 				}
 			}
@@ -254,7 +254,6 @@ sub add : Local {
 		$count++;
 	}
 
-	
 	if (defined($error)) {         # if error, rollback
 		$count = 0; # if error, count is zero. nothing inserted.
 		$schema->txn_rollback();
@@ -284,10 +283,12 @@ sub index : Private {
 
 Lauren O'Meara
 
-=head1 LICENSE
+=head1 COPYRIGHT AND LICENSE
 
-This library is free software, you can redistribute it and/or modify
-it under the same terms as Perl itself.
+Copyright 2008 by Magazines.com, LLC
+
+You can redistribute and/or modify this code under the same terms as Perl
+itself.
 
 =cut
 

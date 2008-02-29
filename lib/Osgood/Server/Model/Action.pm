@@ -26,4 +26,12 @@ __PACKAGE__->add_columns(
 __PACKAGE__->set_primary_key('action_id');
 __PACKAGE__->has_many(events => 'Osgood::Server::Model::Event', 'action_id' );
 
+=head1 COPYRIGHT AND LICENSE
+
+Copyright 2008 by Magazines.com, LLC
+
+You can redistribute and/or modify this code under the same terms as Perl
+itself.
+
+=cut
 1;
