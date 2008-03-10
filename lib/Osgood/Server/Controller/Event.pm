@@ -11,6 +11,7 @@ use Osgood::Event;
 use Osgood::EventList;
 use Osgood::EventList::Serializer;
 use Osgood::EventList::Deserializer;
+use DBIx::Class::ResultClass::HashRefInflator;
 
 
 =head1 NAME
@@ -71,10 +72,10 @@ sub list : Local {
 	}
 
 	# init resultset 
-	my $events = $c->model('OsgoodDB')->schema()->resultset('Event');
+	my $events = $c->model('OsgoodDB')->schema->resultset('Event');
 
 	# order query by event_id
-	$events = $events->search( undef, {order_by => 'event_id' } );
+	$events = $events->search( undef, {prefetch => [ 'parameters', 'action', 'object' ], order_by => 'me.event_id' } );
 
 	# build search hash
 	my $object = $c->req->params->{'object'};
@@ -96,22 +97,22 @@ sub list : Local {
 	my $id = $c->req->params->{'id'};
 	if (defined($id)) {
 		$id =~ s/\'//g;
-		$events = $events->search( {'event_id' => { '>' => $id } } );
+		$events = $events->search( {'me.event_id' => { '>' => $id } } );
 	}
 	my $date_after = $c->req->params->{'date_after'};
 	if (defined($date_after)) {
 		$date_after =~ s/\'//g;
-		$events = $events->search( {'date_occurred' => { '>' => $date_after } } );
+		$events = $events->search( {'me.date_occurred' => { '>' => $date_after } } );
 	}
 	my $date_before = $c->req->params->{'date_before'};
 	if (defined($date_before)) {
 		$date_before =~ s/\'//g;
-		$events = $events->search( {'date_occurred' => { '<' => $date_before } } );
+		$events = $events->search( {'me.date_occurred' => { '<' => $date_before } } );
 	}
 	my $date_equals = $c->req->params->{'date_equals'};
 	if (defined($date_equals)) {
 		$date_equals =~ s/\'//g;
-		$events = $events->search( {'date_occurred' => $date_equals } );
+		$events = $events->search( {'me.date_occurred' => $date_equals } );
 	}
 	my $limit = $c->req->params->{'limit'};
 	if (defined($limit)) {
@@ -119,11 +120,27 @@ sub list : Local {
 		$events = $events->search( undef, { rows => $limit } );
 	}
 
+	$events->result_class('DBIx::Class::ResultClass::HashRefInflator');
+
 	my $net_list = new Osgood::EventList;
 	if (defined($events)) {
 		while (my $event = $events->next()) {
 			# convert db event to net event
-			my $net_event = new Osgood::Event($event->get_hash());
+			my $params = {};
+			if(scalar($event->{'parameters'})) {
+				foreach (@{ $event->{'parameters'} }) {
+					$params->{$_->{'name'}} = $_->{'value'};
+				}
+			}
+
+
+			my $net_event = new Osgood::Event(
+				id	=> $event->{'event_id'},
+				object	=> $event->{'object'}->{'name'},
+				action	=> $event->{'action'}->{'name'},
+				date_occurred => DateTime::Format::MySQL->parse_datetime($event->{'date_occurred'}),
+				params	=> $params
+			);
 			# add net event to list
 			$net_list->add_to_events($net_event);
 		}
