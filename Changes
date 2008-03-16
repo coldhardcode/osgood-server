@@ -1,5 +1,7 @@
 This file documents the revision history for Perl extension Osgood::Server.
 
+1.1.0
+    - New serialization API
 1.0.6    2008-03-10
     - Packaging problems.
 1.0.5	 2008-03-10

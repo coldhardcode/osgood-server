@@ -9,8 +9,7 @@ use Carp;
 use DateTime::Format::MySQL;
 use Osgood::Event;
 use Osgood::EventList;
-use Osgood::EventList::Serializer;
-use Osgood::EventList::Deserializer;
+use Osgood::EventList::Serialize::JSON;
 use DBIx::Class::ResultClass::HashRefInflator;
 
 
@@ -147,11 +146,11 @@ sub list : Local {
 	}
 
 	# serialize the list
-	my $ser = new Osgood::EventList::Serializer(list => $net_list);
+	my $ser = new Osgood::EventList::Serializer::JSON();
 	# set response type
-	$c->response->content_type('text/xml');
-	# return xml
-	$c->response->body($ser->serialize());
+	$c->response->content_type($ser->content_type());
+	# return serialized list
+	$c->response->body($ser->serialize($net_list));
 }
 
 =head2 show 
@@ -182,11 +181,11 @@ sub show : Local {
 	}
 
 	# serialize the list
-	my $ser = new Osgood::EventList::Serializer(list => $net_list);
+	my $ser = new Osgood::EventList::Serializer();
 	# set response type
-	$c->response->content_type('text/xml');
+	$c->response->content_type($ser->content_type());
 	# return xml
-	$c->response->body($ser->serialize());
+	$c->response->body($ser->serialize($net_list));
 }
 
 =head2 add 
@@ -203,9 +202,9 @@ Rolls back all changes and returns zero if any insert failed.
 sub add : Local {
 	my ($self, $c) = @_;
 
-	my $xml = $c->req->param('xml');
-	if (!defined($xml)) {
-		$c->stash->{error} = "Error: missing parameter: xml list of events";
+	my $ser = $c->req->param('ser');
+	if (!defined($ser)) {
+		$c->stash->{error} = "Error: missing parameter: serialized list of events";
 		$c->stash->{count} = 0;
 		return;
 	}
@@ -214,8 +213,8 @@ sub add : Local {
 	my $schema = $c->model('OsgoodDB')->schema();
 	$schema->txn_begin();
 
-	my $des = new Osgood::EventList::Deserializer(xml => $xml);
-	my $eList = $des->deserialize();
+	my $des = new Osgood::EventList::Serialize::JSON;
+	my $eList = $des->deserialize($ser);
 	my $iter = $eList->iterator();
 	# count events
 	my $count = 0;
