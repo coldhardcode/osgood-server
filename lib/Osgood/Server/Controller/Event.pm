@@ -146,7 +146,7 @@ sub list : Local {
 	}
 
 	# serialize the list
-	my $ser = new Osgood::EventList::Serializer::JSON();
+	my $ser = new Osgood::EventList::Serialize::JSON();
 	# set response type
 	$c->response->content_type($ser->content_type());
 	# return serialized list
@@ -181,10 +181,10 @@ sub show : Local {
 	}
 
 	# serialize the list
-	my $ser = new Osgood::EventList::Serializer();
+	my $ser = new Osgood::EventList::Serialize::JSON();
 	# set response type
 	$c->response->content_type($ser->content_type());
-	# return xml
+	# return serialized data
 	$c->response->body($ser->serialize($net_list));
 }
 
