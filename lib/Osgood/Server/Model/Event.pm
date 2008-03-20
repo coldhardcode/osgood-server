@@ -65,7 +65,7 @@ __PACKAGE__->inflate_column('date_occurred', {
 
 sub get_hash {
 	my $self = shift;
-	my $self_hash = ();
+	my $self_hash = {};
 
     # stash the event
     $self_hash->{'id'} = $self->id();
@@ -74,11 +74,7 @@ sub get_hash {
 	$self_hash->{'action'} = $self->action->name();
 	$self_hash->{'params'} = {};
 
-	my $params = $self->parameters();
-	# iterate over parameters and add to param hash
-	while (my $param = $params->next()) {
-		$self_hash->{'params'}->{$param->name()} = $param->value();
-	}
+	$self_hash->{params} = { map {$_->name => $_->value } $self->parameters->all };
 
 	return $self_hash;
 }

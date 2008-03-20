@@ -49,11 +49,15 @@ Osgood::Server - Catalyst based application
 
 L<Osgood::Server::Controller::Root>, L<Catalyst>, L<Osgood::Client>
 
-=head1 AUTHOR
+=head1 AUTHORS
 
 Lauren O'Meara
 
 Cory 'G' Watson <gphat@cpan.org>
+
+=head1 CONTRIBUTORS
+
+Guillermo Roditi (groditi)
 
 =head1 COPYRIGHT AND LICENSE
 
