@@ -15,7 +15,7 @@ use Catalyst::Runtime '5.70';
 
 use Catalyst qw/-Debug ConfigLoader Static::Simple/;
 
-our $VERSION = '1.0.6';
+our $VERSION = '1.1.0';
 our $AUTHORITY = 'cpan:GPHAT';
 
 # Configure the application. 
@@ -35,15 +35,26 @@ __PACKAGE__->setup;
 
 =head1 NAME
 
-Osgood::Server - Catalyst based application
+Osgood::Server - Event Repository
 
 =head1 SYNOPSIS
 
+    create a database (mysql in our example)
+    mysql -u root your_database < sql/schema.sql
     script/osgood_server_server.pl
 
 =head1 DESCRIPTION
 
 [enter your description here]
+
+=head1 PERFORMANCE
+
+Note: See the accompanying section of Osgood::Client as well.
+
+Osgood uses some DBIx::Class shortcuts to pull results faster.  Depending on
+database hardware, small numbers of events (hundreds) should be really fast.
+Tests have been conducted on lists of 10_000 events and the response time still
+falls within ::Client's default 30 second timeout on modern hardware.
 
 =head1 SEE ALSO
 
