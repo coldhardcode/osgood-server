@@ -41,6 +41,7 @@ Osgood::Server - Event Repository
 
     create a database (mysql in our example)
     mysql -u root your_database < sql/schema.sql
+    edit osgood_server.yml
     script/osgood_server_server.pl
 
 =head1 DESCRIPTION
