@@ -27,37 +27,9 @@ Catalyst Controller.
 
 =head2 list 
 
-Takes one or more query parameters and returns a list of events.  Parameters can be: 
-
-=over 
-
-=item "action"
-
-looks for all events with this action
-
-=item "date_after"
-
-looks for all events with date greater than this date
-
-=item "date_before"
-
-looks for all events with a date less than this date
-
-=item "id"
-
-looks for all events with id greater than this number
-
-=item "limit"
-
-limits the number of events returns to the specified number
-
-=item "object"
-
-looks for all events with this object
-
-=back 
-
-If fields are invalid, an error is returned. If no matching events are found, an emtpy list is returned. 
+Takes one or more query parameters and returns a list of events.  Parameters
+should be name value pairs where the name corresponds to a resultset method
+of Event.
 
 =cut
 

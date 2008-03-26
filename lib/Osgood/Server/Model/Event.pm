@@ -85,6 +85,12 @@ use base 'DBIx::Class::ResultSet';
 
 =head1 RESULTSET METHODS
 
+=head2 Usage
+
+All these method names may be passed as parameter names to event/list
+
+=cut
+
 =over 4
 
 =item object
