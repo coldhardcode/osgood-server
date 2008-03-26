@@ -115,6 +115,12 @@ sub action {
 	);
 }
 
+sub id {
+    my $self = shift();
+
+    return $self->id_greater(shift());
+}
+
 =item id_greater
 
 Looks for events with an id greater than the one specified
@@ -124,7 +130,7 @@ sub id_greater {
     my $self = shift();
 
     return $self->search({
-        'me.id' => { '>' => shift() }
+        'me.event_id' => { '>' => shift() }
     });
 }
 
@@ -137,7 +143,7 @@ sub id_greater {
     my $self = shift();
 
     return $self->search({
-        'me.id' => { '<' => shift() }
+        'me.event_id' => { '<' => shift() }
     });
 }
 

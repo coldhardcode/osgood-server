@@ -76,31 +76,13 @@ sub list : Local {
 	# order query by event_id
 	$events = $events->search( undef, {prefetch => [ 'parameters', 'action', 'object' ], order_by => 'me.event_id' } );
 
-	# build search hash
-	my $object = $c->req->params->{'object'};
-	if (defined($object)) {
-		$events = $events->object($object);
-	}
-	my $action = $c->req->params->{'action'};
-	if (defined($action)) {
-		$events = $events->action($action);
-	}
-	my $id = $c->req->params->{'id'};
-	if (defined($id)) {
-		$events = $events->id_greater($id);
-	}
-	my $date_after = $c->req->params->{'date_after'};
-	if (defined($date_after)) {
-        $events = $events->date_after($date_after);
-	}
-	my $date_before = $c->req->params->{'date_before'};
-	if (defined($date_before)) {
-        $events = $events->date_before($date_before);
-	}
-	my $date_equals = $c->req->params->{'date_equals'};
-	if (defined($date_equals)) {
-        $events = $events->date_equals($date_equals);
-	}
+    my $params = $c->req->params();
+    foreach my $param (keys(%{ $params })) {
+        if($events->can($param)) {
+            $events = $events->$param($params->{$param});
+        }
+    }
+
 	my $limit = $c->req->params->{'limit'};
 	if (defined($limit)) {
 		$events = $events->search( undef, { rows => $limit } );
