@@ -15,7 +15,7 @@ use Catalyst::Runtime '5.70';
 
 use Catalyst qw/-Debug ConfigLoader Static::Simple/;
 
-our $VERSION = '1.1.0';
+our $VERSION = '1.2.0';
 our $AUTHORITY = 'cpan:GPHAT';
 
 # Configure the application. 

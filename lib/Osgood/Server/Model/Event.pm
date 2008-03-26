@@ -23,6 +23,7 @@ my $tz = new DateTime::TimeZone(name => 'local');
 
 __PACKAGE__->load_components(qw/PK::Auto Core/);
 __PACKAGE__->table('events');
+__PACKAGE__->resultset_class('Osgood::Server::ResultSet::Event');
 __PACKAGE__->add_columns(
 		event_id      => {data_type => 'bigint', is_auto_increment => 1},
 		object_id     => {data_type => 'bigint', is_foreign_key => 1},
@@ -78,6 +79,109 @@ sub get_hash {
 
 	return $self_hash;
 }
+
+package Osgood::Server::ResultSet::Event;
+use base 'DBIx::Class::ResultSet';
+
+=head1 RESULTSET METHODS
+
+=over 4
+
+=item object
+
+Looks for events with the specified object name
+
+=cut
+sub object {
+    my $self = shift();
+
+    return $self->search(
+		{ 'object.name' => shift() },
+		{ 'join' => 'object' }
+	);
+}
+
+=item action
+
+Looks for events with the specified action name
+
+=cut
+sub action {
+    my $self = shift();
+
+	return $self->search(
+		{ 'action.name' => shift() },
+		{ 'join' => 'action' }
+	);
+}
+
+=item id_greater
+
+Looks for events with an id greater than the one specified
+
+=cut
+sub id_greater {
+    my $self = shift();
+
+    return $self->search({
+        'me.id' => { '>' => shift() }
+    });
+}
+
+=item id_less
+
+Looks for events with an id less than the one specified
+
+=cut
+sub id_greater {
+    my $self = shift();
+
+    return $self->search({
+        'me.id' => { '<' => shift() }
+    });
+}
+
+=item date_after
+
+Returns events that occurred after the specified date.
+
+=cut
+sub date_after {
+    my $self = shift();
+
+	return $self->search({
+	    'me.date_occurred' => { '>' => shift() }
+	});
+}
+
+=item date_before
+
+Returns events that occurred before the specified date.
+
+=cut
+sub date_before {
+    my $self = shift();
+
+	return $self->search({
+	    'me.date_occurred' => { '<' => shift() }
+	});
+}
+
+=item date_equals
+
+Returns events that occurred before on specified date.
+
+=cut
+sub date_equals {
+    my $self = shift();
+
+	return $self->search({
+	    'me.date_occurred' => shift()
+	});
+}
+
+
+=back
 
 =head1 COPYRIGHT AND LICENSE
 

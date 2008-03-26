@@ -1,5 +1,7 @@
 This file documents the revision history for Perl extension Osgood::Server.
 
+1.2.0
+ 		- Use custom ResultSet to move meat of searches from Controller to Model
 1.1.0
 	  - Documentation with example scenarios
     - Fix bad variable initialization for direct event fetches
