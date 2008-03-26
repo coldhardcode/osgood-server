@@ -79,49 +79,30 @@ sub list : Local {
 	# build search hash
 	my $object = $c->req->params->{'object'};
 	if (defined($object)) {
-        # $object =~ s/\'//g;
 		$events = $events->object($object);
-        # $events = $events->search(
-        #   {'object.name' => $object},
-        #   {'join' => 'object'}
-        # );
 	}
 	my $action = $c->req->params->{'action'};
 	if (defined($action)) {
-        # $action =~ s/\'//g;
 		$events = $events->action($action);
-        # $events = $events->search(
-        #   {'action.name' => $action},
-        #   {'join' => 'action'}
-        # );
 	}
 	my $id = $c->req->params->{'id'};
 	if (defined($id)) {
-        # $id =~ s/\'//g;
-        # $events = $events->search( {'me.event_id' => { '>' => $id } } );
 		$events = $events->id_greater($id);
 	}
 	my $date_after = $c->req->params->{'date_after'};
 	if (defined($date_after)) {
-        # $date_after =~ s/\'//g;
-        # $events = $events->search( {'me.date_occurred' => { '>' => $date_after } } );
         $events = $events->date_after($date_after);
 	}
 	my $date_before = $c->req->params->{'date_before'};
 	if (defined($date_before)) {
-        # $date_before =~ s/\'//g;
-        # $events = $events->search( {'me.date_occurred' => { '<' => $date_before } } );
         $events = $events->date_before($date_before);
 	}
 	my $date_equals = $c->req->params->{'date_equals'};
 	if (defined($date_equals)) {
-        # $date_equals =~ s/\'//g;
-        # $events = $events->search( {'me.date_occurred' => $date_equals } );
         $events = $events->date_equals($date_equals);
 	}
 	my $limit = $c->req->params->{'limit'};
 	if (defined($limit)) {
-        # $limit =~ s/\'//g;
 		$events = $events->search( undef, { rows => $limit } );
 	}
 
