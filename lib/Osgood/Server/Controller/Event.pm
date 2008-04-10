@@ -55,16 +55,17 @@ sub list : Local {
         }
     }
 
-	my $limit = $c->req->params->{'limit'};
-	if (defined($limit)) {
-		$events = $events->search( undef, { rows => $limit } );
-	}
-
 	$events->result_class('DBIx::Class::ResultClass::HashRefInflator');
 
+	my $limit = $c->req->params->{'limit'};
 	my $net_list = new Osgood::EventList;
+	my $count = 0;
 	if (defined($events)) {
 		while (my $event = $events->next()) {
+		    # Enforce limit this way, as prefetch breaks SQL limit
+        	if (defined($limit) && $limit <= $count) {
+        		$events = $events->search( undef, { rows => $limit } );
+        	}
 			# convert db event to net event
 			my $params = {};
 			if(scalar($event->{'parameters'})) {
@@ -83,6 +84,7 @@ sub list : Local {
 			);
 			# add net event to list
 			$net_list->add_to_events($net_event);
+			$count++;
 		}
 	}
 
