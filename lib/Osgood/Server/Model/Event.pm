@@ -145,7 +145,7 @@ sub id_greater {
 Looks for events with an id less than the one specified
 
 =cut
-sub id_greater {
+sub id_less {
     my $self = shift();
 
     return $self->search({
