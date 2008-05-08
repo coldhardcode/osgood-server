@@ -54,6 +54,26 @@ sub list : Local {
             $events = $events->$param($params->{$param});
         }
     }
+	my $evtparams = $c->req->params->{'parameter'};
+	if (defined($evtparams)) {
+		my $pnum = 1;
+		foreach my $key (keys %$params) {
+			$events = $events->search({
+				"ep$pnum.name" => $key,
+				"ep$pnum.value" => $params->{$key}
+			});
+			$pnum++;
+		}
+		$events = $events->search(undef, {
+			from => [
+				{ 'me' => 'events' },
+				map {[
+					{ "ep$_" => 'event_parameters' },
+					{ "ep$_.event_id" => 'me.event_id ' }
+				]} 1 .. $pnum - 1
+			]
+		});
+	}
 
 	$events->result_class('DBIx::Class::ResultClass::HashRefInflator');
 

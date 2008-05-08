@@ -13,7 +13,7 @@ use Catalyst::Runtime '5.70';
 # Static::Simple: will serve static files from the application's root 
 #                 directory
 
-use Catalyst qw/-Debug ConfigLoader Static::Simple/;
+use Catalyst qw/-Debug ConfigLoader Static::Simple Params::Nested/;
 
 our $VERSION = '1.2.0';
 our $AUTHORITY = 'cpan:GPHAT';
