@@ -57,10 +57,10 @@ sub list : Local {
 	my $evtparams = $c->req->params->{'parameter'};
 	if (defined($evtparams)) {
 		my $pnum = 1;
-		foreach my $key (keys %$params) {
+		foreach my $key (keys %$evtparams) {
 			$events = $events->search({
 				"ep$pnum.name" => $key,
-				"ep$pnum.value" => $params->{$key}
+				"ep$pnum.value" => $evtparams->{$key}
 			});
 			$pnum++;
 		}
