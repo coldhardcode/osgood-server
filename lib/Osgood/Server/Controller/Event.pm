@@ -69,7 +69,7 @@ sub list : Local {
 				{ 'me' => 'events' },
 				map {[
 					{ "ep$_" => 'event_parameters' },
-					{ "ep$_.event_id" => 'me.event_id ' }
+					{ "ep$_.event_id" => 'me.event_id' }
 				]} 1 .. $pnum - 1
 			]
 		});
