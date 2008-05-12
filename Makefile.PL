@@ -10,6 +10,7 @@ requires 'Osgood::Client';
 requires 'Catalyst::Runtime' => '5.7011';
 requires 'Catalyst::Model::DBIC::Schema';
 requires 'Catalyst::Plugin::ConfigLoader';
+requires 'Catalyst::Plugin::Params::Nested';
 requires 'Catalyst::Plugin::Static::Simple';
 requires 'Catalyst::Action::RenderView';
 requires 'Catalyst::View::REST::XML' => 0;

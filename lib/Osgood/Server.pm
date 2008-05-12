@@ -15,7 +15,7 @@ use Catalyst::Runtime '5.70';
 
 use Catalyst qw/-Debug ConfigLoader Static::Simple Params::Nested/;
 
-our $VERSION = '1.2.0';
+our $VERSION = '1.2.1';
 our $AUTHORITY = 'cpan:GPHAT';
 
 # Configure the application. 
@@ -136,6 +136,7 @@ Cory 'G' Watson <gphat@cpan.org>
 =head1 CONTRIBUTORS
 
 Guillermo Roditi (groditi)
+Mike Eldridge (diz)
 
 =head1 COPYRIGHT AND LICENSE
 
