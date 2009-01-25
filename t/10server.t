@@ -14,25 +14,25 @@ use Osgood::Event;
 use Osgood::EventList;
 use URI;
 
-my $uri = new URI($ENV{'OSGOOD_SERVER_URL'});
-my $client = new Osgood::Client({ url => $uri });
+my $uri = URI($ENV{'OSGOOD_SERVER_URL'})->new;
+my $client = Osgood::Client->new({ url => $uri });
 
-my $event1 = new Osgood::Event(
+my $event1 = Osgood::Event->new(
 	object => 'Person',
 	action => 'sneezed',
-	date_occurred => DateTime->now()
+	date_occurred => DateTime->now
 );
-my $event2 = new Osgood::Event(
+my $event2 = Osgood::Event->new(
 	object => 'Person',
 	action => 'sneezed',
-	date_occurred => DateTime->now()
+	date_occurred => DateTime->now
 );
-my $event3 = new Osgood::Event(
+my $event3 = Osgood::Event->new(
 	object => 'Person',
 	action => 'sneezed',
-	date_occurred => DateTime->now()
+	date_occurred => DateTime->now
 );
-my $list = new Osgood::EventList(events => [ $event1, $event2, $event3 ]);
+my $list = Osgood::EventList->new(events => [ $event1, $event2, $event3 ]);
 
 $client->list($list);
 my $retval = $client->send();

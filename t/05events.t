@@ -15,7 +15,6 @@ use OsgoodTest;
 use Osgood::Client;
 use Osgood::Event;
 use Osgood::EventList;
-use Osgood::EventList::Serialize::JSON;
 
 BEGIN {
     eval "use DBD::SQLite";
@@ -27,28 +26,27 @@ use_ok 'Catalyst::Test', 'Osgood::Server';
 my $schema = OsgoodTest->init_schema();
 ok($schema, 'Got a schema');
 
-my $event1 = new Osgood::Event(
+my $event1 = Osgood::Event->new(
     object => 'Person',
     action => 'sneezed',
-    date_occurred => DateTime->now()
+    date_occurred => DateTime->now
 );
-my $event2 = new Osgood::Event(
+my $event2 = Osgood::Event->new(
     object => 'Person',
     action => 'sneezed',
-    date_occurred => DateTime->now()
+    date_occurred => DateTime->now
 );
-my $event3 = new Osgood::Event(
+my $event3 = Osgood::Event->new(
     object => 'Person',
     action => 'sneezed',
-    date_occurred => DateTime->now()
+    date_occurred => DateTime->now
 );
 my $list = Osgood::EventList->new(events => [ $event1, $event2, $event3 ]);
-my $ser = Osgood::EventList::Serialize::JSON->new;
 
 my $req2 = HTTP::Request->new('POST', '/event');
-my $content2 = $ser->serialize($list);
+my $content2 = $list->freeze;
 
-$req2->content_type($ser->content_type);
+$req2->content_type('application/json');
 $req2->content_length(do { use bytes; length($content2) });
 $req2->content($content2);
 my $response2 = request($req2);

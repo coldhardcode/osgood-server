@@ -9,7 +9,6 @@ use Carp;
 use DateTime::Format::MySQL;
 use Osgood::Event;
 use Osgood::EventList;
-use Osgood::EventList::Serialize::JSON;
 use DBIx::Class::ResultClass::HashRefInflator;
 
 
@@ -48,7 +47,7 @@ sub Alist : Local {
 	# order query by event_id
 	$events = $events->search( undef, {prefetch => [ 'parameters', 'action', 'object' ], order_by => 'me.event_id' } );
 
-    my $params = $c->req->params();
+    my $params = $c->req->params;
     foreach my $param (keys(%{ $params })) {
         if($events->can($param)) {
             $events = $events->$param($params->{$param});
@@ -78,10 +77,10 @@ sub Alist : Local {
 	$events->result_class('DBIx::Class::ResultClass::HashRefInflator');
 
 	my $limit = $c->req->params->{'limit'};
-	my $net_list = new Osgood::EventList;
+	my $net_list = Osgood::EventList->new;
 	my $count = 0;
 	if (defined($events)) {
-		while (my $event = $events->next()) {
+		while (my $event = $events->next) {
 		    # Enforce limit this way, as prefetch breaks SQL limit
         	if (defined($limit) && $limit <= $count) {
         		$events = $events->search( undef, { rows => $limit } );
@@ -95,7 +94,7 @@ sub Alist : Local {
 			}
 
 
-			my $net_event = new Osgood::Event(
+			my $net_event = Osgood::Event->new(
 				id	=> $event->{'event_id'},
 				object	=> $event->{'object'}->{'name'},
 				action	=> $event->{'action'}->{'name'},
@@ -108,12 +107,10 @@ sub Alist : Local {
 		}
 	}
 
-	# serialize the list
-	my $ser = new Osgood::EventList::Serialize::JSON();
 	# set response type
-	$c->response->content_type($ser->content_type());
+	$c->response->content_type('application/json');
 	# return serialized list
-	$c->response->body($ser->serialize($net_list));
+	$c->response->body($net_list->freeze);
 }
 
 =head2 show 
@@ -134,21 +131,19 @@ sub Ashow : Local {
 	my $event = $c->model('OsgoodDB::Event')->find($id);
 
 	# init list
-	my $net_list = new Osgood::EventList;
+	my $net_list = Osgood::EventList->new;
 
 	if (defined($event)) {
 		# convert db event to net event
-		my $net_event = new Osgood::Event($event->get_hash());
+		my $net_event = Osgood::Event->new($event->get_hash);
 		# add net event to list
 		$net_list->add_to_events($net_event);
 	}
 
-	# serialize the list
-	my $ser = new Osgood::EventList::Serialize::JSON();
 	# set response type
-	$c->response->content_type($ser->content_type());
+	$c->response->content_type('application/json');
 	# return serialized data
-	$c->response->body($ser->serialize($net_list));
+	$c->response->body($net_list->freeze);
 }
 
 =head2 add 
@@ -173,52 +168,51 @@ sub Aadd : Local {
 	}
 
 	# wrap the insert in a transaction. if any one fails, they all do
-	my $schema = $c->model('OsgoodDB')->schema();
-	$schema->txn_begin();
+	my $schema = $c->model('OsgoodDB')->schema;
+	$schema->txn_begin;
 
-	my $des = Osgood::EventList::Serialize::JSON->new;
-	my $eList = $des->deserialize($ser);
-	my $iter = $eList->iterator();
+	my $eList = Osgood::EventList->thaw($ser);
+	my $iter = $eList->iterator;
 	# count events
 	my $count = 0;
 	my $error = undef;
 
-	while (($iter->has_next()) && (!defined($error))) {
-		my $xmlEvent = $iter->next();
+	while (($iter->has_next) && (!defined($error))) {
+		my $xmlEvent = $iter->next;
 
 		# find or create the action
 		my $action = $c->model('OsgoodDB::Action')->find_or_create({
-			   	name => $xmlEvent->action()
+			   	name => $xmlEvent->action
 			});
 		if (!defined($action)) {
-			$error = "Error: bad action " . $xmlEvent->action();
+			$error = "Error: bad action " . $xmlEvent->action;
 			next;
 		}
 		# find or create the object
 		my $object = $c->model('OsgoodDB::Object')->find_or_create({
-			   	name => $xmlEvent->object()
+			   	name => $xmlEvent->object
 			});
 		if (!defined($object)) {
-			$error = "Error: bad object " . $xmlEvent->object();
+			$error = "Error: bad object " . $xmlEvent->object;
 			next;
 		}
 		# create event - this has to be a new thing. no find here. 
 		my $dbEvent = $c->model('OsgoodDB::Event')->create({
-			action_id => $action->id(),
-			object_id => $object->id(),
-			date_occurred => $xmlEvent->date_occurred()
+			action_id => $action->id,
+			object_id => $object->id,
+			date_occurred => $xmlEvent->date_occurred
 		});
 		if (!defined($dbEvent)) {
-			$error = "Error: bad event " . $xmlEvent->object() . " " .
-					 $xmlEvent->action() . " " . $xmlEvent->date_occurred();
+			$error = "Error: bad event " . $xmlEvent->object . " " .
+					 $xmlEvent->action . " " . $xmlEvent->date_occurred;
 			next;
 		}
 		# add all params
-		my $params = $xmlEvent->params();
+		my $params = $xmlEvent->params;
 		if (defined($params)) {
 			foreach my $param_name (keys %{$params}) {
 				my $event_param = $c->model('OsgoodDB::EventParameter')->create({
-					event_id => $dbEvent->id(),
+					event_id => $dbEvent->id,
 					name => $param_name,
 					value => $params->{$param_name}
 				});
@@ -235,10 +229,10 @@ sub Aadd : Local {
 
 	if (defined($error)) {         # if error, rollback
 		$count = 0; # if error, count is zero. nothing inserted.
-		$schema->txn_rollback();
+		$schema->txn_rollback;
 		$c->stash->{error} = $error;
 	} else {					   # otherwise, commit
-		$schema->txn_commit();
+		$schema->txn_commit;
 	}
 
 	$c->stash->{count} = $count;

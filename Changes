@@ -1,5 +1,7 @@
 This file documents the revision history for Perl extension Osgood::Server.
 
+1.3.0
+    - Bump Client version dep
 1.2.0
  		- Use custom ResultSet to move meat of searches from Controller to Model
     - Fix bug in query's limit parameter

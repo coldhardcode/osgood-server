@@ -16,11 +16,10 @@ __PACKAGE__->load_classes({
 	/]
 });
 
-sub connect
-{
-	my $self = shift;
+sub connect {
+    my $self = shift;
 
-	my $schema = $self->next::method(@_);
+    my $schema = $self->next::method(@_);
 
     if($schema && $schema->storage->can('connect_info')) {
         if(lc($schema->storage->connect_info->[0]) =~ /mysql/) {
@@ -28,21 +27,19 @@ sub connect
         }
     }
 
-	return $schema;
+    return $schema;
 }
 
-sub inflate
-{
-	my $self = shift;
-	my $yaml = new YAML::Loader $self;
+sub inflate {
+    my $self = shift;
+    my $yaml = new YAML::Loader->new($self);
 
-	return $yaml->load(@_);
+    return $yaml->load(@_);
 }
 
-sub deflate
-{
-	my $self = shift;
-	my $yaml = new YAML::Dumper;
+sub deflate {
+    my $self = shift;
+    my $yaml = YAML::Dumper->new;
 
 	return $yaml->dump(@_);
 }

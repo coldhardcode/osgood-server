@@ -5,7 +5,7 @@ all_from 'lib/Osgood/Server.pm';
 
 requires 'DateTime';
 requires 'DateTime::Format::MySQL';
-requires 'Osgood::Client';
+requires 'Osgood::Client' => '1.2.0';
 
 requires 'Catalyst::Runtime' => '5.7011';
 requires 'Catalyst::Model::DBIC::Schema';

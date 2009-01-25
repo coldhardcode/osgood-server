@@ -78,14 +78,14 @@ and it is a great chance to use Osgood.
 When the cancellation happens, you add a smidge of code that uses
 Osgood::Client to send an event.  You might use descriptions like:
 
-  my $event = new Osgood::Event(
+  my $event = Osgood::Event->new(
       object    => 'Order',
       action    => 'canceled',
       params    => {
           id    => 12345
       }
   );
-  my $list = new Osgood::EventList(events => [ $event ]);
+  my $list = Osgood::EventList->new(events => [ $event ]);
   $client->send($list);
 
 Meaning that Order #12345 was canceled.

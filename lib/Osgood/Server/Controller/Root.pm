@@ -42,13 +42,12 @@ sub event_POST {
     my ($self, $c) = @_;
 
 	# wrap the insert in a transaction. if any one fails, they all do
-	my $schema = $c->model('OsgoodDB')->schema();
+	my $schema = $c->model('OsgoodDB')->schema;
 	$schema->txn_begin;
 
     my $events = $c->req->data;
-    my $des = Osgood::EventList::Serialize::JSON->new;
 
-    my $list = $des->deserialize($events, 1);
+    my $list = Osgood::EventList->unpack($events);
     my $iter = $list->iterator;
     # count events
     my $count = 0;

@@ -20,7 +20,7 @@ use base qw/DBIx::Class/;
 
 use DateTime::TimeZone;
 
-my $tz = new DateTime::TimeZone(name => 'local');
+my $tz = DateTime::TimeZone->new(name => 'local');
 
 __PACKAGE__->load_components(qw/PK::Auto Core/);
 __PACKAGE__->table('events');
