@@ -86,15 +86,9 @@ use base 'DBIx::Class::ResultSet';
 
 =head1 RESULTSET METHODS
 
-=head2 Usage
-
 All these method names may be passed as parameter names to event/list
 
-=cut
-
-=over 4
-
-=item object
+=head2 object
 
 Looks for events with the specified object name
 
@@ -108,7 +102,7 @@ sub object {
 	);
 }
 
-=item action
+=head2 action
 
 Looks for events with the specified action name
 
@@ -128,7 +122,7 @@ sub id {
     return $self->id_greater(shift());
 }
 
-=item id_greater
+=head2 id_greater
 
 Looks for events with an id greater than the one specified
 
@@ -141,7 +135,7 @@ sub id_greater {
     });
 }
 
-=item id_less
+=head2 id_less
 
 Looks for events with an id less than the one specified
 
@@ -154,7 +148,7 @@ sub id_less {
     });
 }
 
-=item date_after
+=head2 date_after
 
 Returns events that occurred after the specified date.
 
@@ -167,7 +161,7 @@ sub date_after {
 	});
 }
 
-=item date_before
+=head2 date_before
 
 Returns events that occurred before the specified date.
 
@@ -180,7 +174,7 @@ sub date_before {
 	});
 }
 
-=item date_equals
+=head2 date_equals
 
 Returns events that occurred before on specified date.
 
@@ -192,9 +186,6 @@ sub date_equals {
 	    'me.date_occurred' => shift()
 	});
 }
-
-
-=back
 
 =head1 COPYRIGHT AND LICENSE
 
