@@ -22,7 +22,11 @@ sub connect
 
 	my $schema = $self->next::method(@_);
 
-	$schema->storage->dbh->do('SET @@SQL_AUTO_IS_NULL=0') if $schema;
+    if($schema && $schema->storage->can('connect_info')) {
+        if(lc($schema->storage->connect_info->[0]) =~ /mysql/) {
+            $schema->storage->dbh->do('SET @@SQL_AUTO_IS_NULL=0')
+        }
+    }
 
 	return $schema;
 }

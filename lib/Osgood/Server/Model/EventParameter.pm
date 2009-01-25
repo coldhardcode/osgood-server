@@ -20,9 +20,9 @@ use base qw/DBIx::Class/;
 __PACKAGE__->load_components(qw/PK::Auto Core/);
 __PACKAGE__->table('event_parameters');
 __PACKAGE__->add_columns(
-	event_parameter_id => { data_type => 'bigint', is_auto_increment => 1 }, 
-	event_id           => { data_type => 'bigint', is_foreign_key => 1 }, 
-	name               => { data_type => 'varchar', size => 64 }, 
+	event_parameter_id => { data_type => 'bigint', is_auto_increment => 1 },
+	event_id           => { data_type => 'bigint', is_foreign_key => 1 },
+	name               => { data_type => 'varchar', size => 64 },
 	value              => { data_type => 'varchar', size => 255 }
 );
 __PACKAGE__->set_primary_key('event_parameter_id');

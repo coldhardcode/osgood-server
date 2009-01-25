@@ -7,7 +7,8 @@ Osgood::Server::Model::Event
 
 =head1 DESCRIPTION
 
-Events consist of an action, object, and date. Optionally, it may also include pparameters.
+Events consist of an action, object, and date. Optionally, it may also include
+parameters.
 
 =head1 DATABASE
 

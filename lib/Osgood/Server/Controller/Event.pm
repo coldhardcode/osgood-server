@@ -2,7 +2,7 @@ package Osgood::Server::Controller::Event;
 
 use strict;
 use warnings;
-use base 'Catalyst::Controller';
+use base 'Catalyst::Controller::REST';
 
 use Carp;
 
@@ -33,7 +33,7 @@ of Event.
 
 =cut
 
-sub list : Local {
+sub Alist : Local {
 	my ($self, $c) = @_;
 
 	# make sure there are parameters
@@ -122,7 +122,7 @@ Takes an id and returns an event list containing the matching event.
 
 =cut
 
-sub show : Local {
+sub Ashow : Local {
 	my ($self, $c, $id) = @_;
 
 	#FIXME - why'd i do this?
@@ -162,7 +162,7 @@ Rolls back all changes and returns zero if any insert failed.
 #Tested with: 
 # http://bone:3000/event/add?xml=<eventlist><version>1</version><events><event><object>lauren</object><action>threwup</action><date_occurred>2007-11-12T00:00:00</date_occurred><params><param><name>sally</name><value>3</value></param><param><name>sue</name><value>4</value></param></params></event><event><object>cassanova</object><action>ran</action><date_occurred>2007-11-20T00:00:00</date_occurred></event></events></eventlist>
 
-sub add : Local {
+sub Aadd : Local {
 	my ($self, $c) = @_;
 
 	my $ser = $c->req->param('ser');
@@ -176,7 +176,7 @@ sub add : Local {
 	my $schema = $c->model('OsgoodDB')->schema();
 	$schema->txn_begin();
 
-	my $des = new Osgood::EventList::Serialize::JSON;
+	my $des = Osgood::EventList::Serialize::JSON->new;
 	my $eList = $des->deserialize($ser);
 	my $iter = $eList->iterator();
 	# count events
@@ -250,7 +250,7 @@ Returns confirmation of controller.
 
 =cut
 
-sub index : Private {
+sub Aindex : Private {
     my ( $self, $c ) = @_;
 
     $c->response->body('Matched Osgood::Server::Controller::Event in Event.');

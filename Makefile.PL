@@ -12,8 +12,10 @@ requires 'Catalyst::Model::DBIC::Schema';
 requires 'Catalyst::Plugin::ConfigLoader';
 requires 'Catalyst::Plugin::Params::Nested';
 requires 'Catalyst::Plugin::Static::Simple';
+requires 'Catalyst::Action::REST';
 requires 'Catalyst::Action::RenderView';
 requires 'Catalyst::View::REST::XML' => 0;
+requires 'JSON::XS';
 requires 'YAML'; # This should reflect the config file format you've chosen
                  # See Catalyst::Plugin::ConfigLoader for supported formats
 catalyst;
