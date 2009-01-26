@@ -147,4 +147,75 @@ itself.
 
 =cut
 
+sub add_from_list {
+    my ($self, $list) = @_;
+
+    my $iter = $list->iterator;
+    # count events
+    my $count = 0;
+    my $error = undef;
+
+	my $schema = $self->model('OsgoodDB')->schema;
+	$schema->txn_begin;
+
+    while (($iter->has_next) && (!defined($error))) {
+        my $event = $iter->next;
+
+        # find or create the action
+        my $action = $self->model('OsgoodDB::Action')->find_or_create({
+            name => $event->action
+        });
+        if (!defined($action)) {
+            $error = "Error: bad action " . $event->action();
+            last;
+        }
+        # find or create the object
+        my $object = $self->model('OsgoodDB::Object')->find_or_create({
+            name => $event->object
+        });
+        if (!defined($object)) {
+            $error = "Error: bad object " . $event->object;
+            last;
+        }
+        # create event - this has to be a new thing. no find here. 
+        my $db_event = $self->model('OsgoodDB::Event')->create({
+            action_id => $action->id,
+            object_id => $object->id,
+            date_occurred => $event->date_occurred
+        });
+        if (!defined($db_event)) {
+            $error = 'Error: bad event ' . $event->object . ' '
+                . $event->action . ' ' . $event->date_occurred;
+            last;
+        }
+        # add all params
+        my $params = $event->params;
+        if (defined($params)) {
+            foreach my $param_name (keys %{$params}) {
+                my $event_param = $self->model('OsgoodDB::EventParameter')->create({
+                    event_id => $db_event->id,
+                    name => $param_name,
+                    value => $params->{$param_name}
+                });
+                if (!defined($event_param)) {
+                    $error = 'Error: bad event parameter' .  $param_name .
+                             ' ' .  $params->{$param_name};
+                }
+            }
+        }
+
+        # increment count of inserted events
+        $count++;
+    }
+
+    if (defined($error)) {      # if error, rollback
+        $count = 0;             # if error, count is zero. nothing inserted.
+        $schema->txn_rollback;
+    } else {                    # otherwise, commit
+        $schema->txn_commit;
+    }
+
+    return ($count, $error);
+}
+
 1;

@@ -9,6 +9,7 @@ This file documents the revision history for Perl extension Osgood::Server.
     - Add DBIx::Class::TimeStamp dep and use InflateColumn::DateTime
     - Get rid of REST view
     - Switch to JSON for add response
+    - Add cooky Base64 encoded adder that returns a javascript string!
 
 1.2.0
  		- Use custom ResultSet to move meat of searches from Controller to Model
