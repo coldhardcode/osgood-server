@@ -1,7 +1,15 @@
 This file documents the revision history for Perl extension Osgood::Server.
 
 1.3.0
+    - Use Catlyst::Action::REST to make things better
     - Bump Client version dep
+    - Remove use of Serializer::*
+    - Lots of style and POD cleanups
+    - Add date_created to events table
+    - Add DBIx::Class::TimeStamp dep and use InflateColumn::DateTime
+    - Get rid of REST view
+    - Switch to JSON for add response
+
 1.2.0
  		- Use custom ResultSet to move meat of searches from Controller to Model
     - Fix bug in query's limit parameter

@@ -35,6 +35,90 @@ sub default : Private {
 
 sub event : Local : ActionClass('REST') { }
 
+=head2 event_GET
+
+=cut
+
+sub event_GET {
+my ($self, $c) = @_;
+
+    # make sure there are parameters
+    if ((keys %{$c->req->params}) <= 0) {
+        $c->stash->{error} = "Error no query parameters";
+        return;
+    }
+
+    # init resultset 
+    my $events = $c->model('OsgoodDB')->schema->resultset('Event');
+
+    # order query by event_id
+    $events = $events->search( undef, {prefetch => [ 'parameters', 'action', 'object' ], order_by => 'me.event_id' } );
+
+    my $params = $c->req->params;
+    foreach my $param (keys(%{ $params })) {
+        if($events->can($param)) {
+            $events = $events->$param($params->{$param});
+        }
+    }
+    my $evtparams = $c->req->params->{'parameter'};
+    if (defined($evtparams)) {
+        my $pnum = 1;
+        foreach my $key (keys %$evtparams) {
+            $events = $events->search({
+                "ep$pnum.name" => $key,
+                "ep$pnum.value" => $evtparams->{$key}
+            });
+            $pnum++;
+        }
+        $events = $events->search(undef, {
+            from => [
+                { 'me' => 'events' },
+                map {[
+                    { "ep$_" => 'event_parameters' },
+                    { "ep$_.event_id" => 'me.event_id' }
+                    ]} 1 .. $pnum - 1
+            ]
+        });
+    }
+
+    $events->result_class('DBIx::Class::ResultClass::HashRefInflator');
+
+    my $limit = $c->req->params->{'limit'};
+    my $net_list = Osgood::EventList->new;
+    my $count = 0;
+    if (defined($events)) {
+            while (my $event = $events->next) {
+            # Enforce limit this way, as prefetch breaks SQL limit
+            if (defined($limit) && $limit <= $count) {
+                $events = $events->search( undef, { rows => $limit } );
+            }
+            # convert db event to net event
+            my $params = {};
+            if(scalar($event->{'parameters'})) {
+                foreach (@{ $event->{'parameters'} }) {
+                    $params->{$_->{'name'}} = $_->{'value'};
+                }
+            }
+
+            my $net_event = Osgood::Event->new(
+                id	=> $event->{'event_id'},
+                object	=> $event->{'object'}->{'name'},
+                action	=> $event->{'action'}->{'name'},
+                date_occurred => DateTime::Format::MySQL->parse_datetime($event->{'date_occurred'}),
+                params	=> $params
+            );
+            # add net event to list
+            $net_list->add_to_events($net_event);
+            $count++;
+        }
+    }
+
+    # set response type
+    $c->response->content_type('application/json');
+    # return serialized list
+    $c->response->body($net_list->freeze);
+}
+
 =head2 event_POST
 
 =cut
@@ -79,8 +163,8 @@ sub event_POST {
             date_occurred => $event->date_occurred
         });
         if (!defined($db_event)) {
-            $error = 'Error: bad event ' . $event->object . ' ' .
-            $event->action . ' ' . $event->date_occurred;
+            $error = 'Error: bad event ' . $event->object . ' '
+                . $event->action . ' ' . $event->date_occurred;
             last;
         }
         # add all params
@@ -103,11 +187,10 @@ sub event_POST {
         $count++;
     }
 
-    if (defined($error)) {         # if error, rollback
-        $count = 0; # if error, count is zero. nothing inserted.
+    if (defined($error)) {      # if error, rollback
+        $count = 0;             # if error, count is zero. nothing inserted.
         $schema->txn_rollback;
-        # $c->stash->{error} = $error;
-    } else {                        # otherwise, commit
+    } else {                    # otherwise, commit
         $schema->txn_commit;
     }
 
@@ -124,10 +207,6 @@ sub event_POST {
 =head2 end
 
 Attempt to render a view, if needed.
-
-=cut
-
-sub end : ActionClass('RenderView') {}
 
 =head1 AUTHOR
 

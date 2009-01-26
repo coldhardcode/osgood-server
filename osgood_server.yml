@@ -4,8 +4,8 @@ Model::OsgoodDB:
     schema_class: Osgood::Server::Schema
     connect_info:
         - DBI:mysql:database=osgood;host=localhost
-        - osgood
-        - password
+        - root
+        -
         -
             quote_char: '`'
             name_sep: .
