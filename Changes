@@ -1,7 +1,7 @@
 This file documents the revision history for Perl extension Osgood::Server.
 
-1.3.0
-    - Use Catlyst::Action::REST to make things better
+2.0.0
+    - Use Catalyst::Action::REST to make things better
     - Bump Client version dep
     - Remove use of Serializer::*
     - Lots of style and POD cleanups
