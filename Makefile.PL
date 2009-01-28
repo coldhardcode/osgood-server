@@ -5,7 +5,7 @@ all_from 'lib/Osgood/Server.pm';
 
 requires 'DBIx::Class::TimeStamp';
 requires 'DateTime';
-requires 'DateTime::Format::MySQL';
+requires 'DateTime::Format::DBI';
 requires 'Osgood::Client' => '2.0.0';
 
 requires 'Catalyst::Runtime' => '5.7011';

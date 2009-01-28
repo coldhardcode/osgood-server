@@ -5,6 +5,7 @@ use warnings;
 use base 'Catalyst::Controller::REST';
 
 use DBIx::Class::ResultClass::HashRefInflator;
+use DateTime::Format::DBI;
 
 #
 # Sets the actions in this controller to be registered with no prefix
@@ -85,11 +86,15 @@ my ($self, $c) = @_;
 
     $events->result_class('DBIx::Class::ResultClass::HashRefInflator');
 
+    my $dt_parser = DateTime::Format::DBI->new(
+        $c->model('OsgoodDB')->schema->storage->dbh
+    );
+
     my $limit = $c->req->params->{'limit'};
     my $net_list = Osgood::EventList->new;
     my $count = 0;
     if (defined($events)) {
-            while (my $event = $events->next) {
+        while (my $event = $events->next) {
             # Enforce limit this way, as prefetch breaks SQL limit
             if (defined($limit) && $limit <= $count) {
                 $events = $events->search( undef, { rows => $limit } );
@@ -127,74 +132,9 @@ my ($self, $c) = @_;
 sub event_POST {
     my ($self, $c) = @_;
 
-	# wrap the insert in a transaction. if any one fails, they all do
-    # my $schema = $c->model('OsgoodDB')->schema;
-    # $schema->txn_begin;
-
     my $events = $c->req->data;
 
     my $list = Osgood::EventList->unpack($events);
-    # my $iter = $list->iterator;
-    # # count events
-    # my $count = 0;
-    # my $error = undef;
-    # 
-    # while (($iter->has_next) && (!defined($error))) {
-    #     my $event = $iter->next;
-    # 
-    #     # find or create the action
-    #     my $action = $c->model('OsgoodDB::Action')->find_or_create({
-    #         name => $event->action
-    #     });
-    #     if (!defined($action)) {
-    #         $error = "Error: bad action " . $event->action();
-    #         last;
-    #     }
-    #     # find or create the object
-    #     my $object = $c->model('OsgoodDB::Object')->find_or_create({
-    #         name => $event->object
-    #     });
-    #     if (!defined($object)) {
-    #         $error = "Error: bad object " . $event->object;
-    #         last;
-    #     }
-    #     # create event - this has to be a new thing. no find here. 
-    #     my $db_event = $c->model('OsgoodDB::Event')->create({
-    #         action_id => $action->id,
-    #         object_id => $object->id,
-    #         date_occurred => $event->date_occurred
-    #     });
-    #     if (!defined($db_event)) {
-    #         $error = 'Error: bad event ' . $event->object . ' '
-    #             . $event->action . ' ' . $event->date_occurred;
-    #         last;
-    #     }
-    #     # add all params
-    #     my $params = $event->params;
-    #     if (defined($params)) {
-    #         foreach my $param_name (keys %{$params}) {
-    #             my $event_param = $c->model('OsgoodDB::EventParameter')->create({
-    #                 event_id => $db_event->id,
-    #                 name => $param_name,
-    #                 value => $params->{$param_name}
-    #             });
-    #             if (!defined($event_param)) {
-    #                 $error = 'Error: bad event parameter' .  $param_name .
-    #                          ' ' .  $params->{$param_name};
-    #             }
-    #         }
-    #     }
-    # 
-    #     # increment count of inserted events
-    #     $count++;
-    # }
-    # 
-    # if (defined($error)) {      # if error, rollback
-    #     $count = 0;             # if error, count is zero. nothing inserted.
-    #     $schema->txn_rollback;
-    # } else {                    # otherwise, commit
-    #     $schema->txn_commit;
-    # }
 
     my ($count, $error) = $c->add_from_list($list);
 
