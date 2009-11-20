@@ -20,5 +20,4 @@ requires 'YAML'; # This should reflect the config file format you've chosen
 catalyst;
 
 install_script glob('script/*.pl');
-auto_install;
 WriteAll;

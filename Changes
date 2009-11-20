@@ -1,5 +1,8 @@
 This file documents the revision history for Perl extension Osgood::Server.
 
+2.0.1   November 19, 2009
+    - Fix busted M:I
+
 2.0.0
     - Use Catalyst::Action::REST to make things better
     - Bump Client version dep
