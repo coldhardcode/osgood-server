@@ -6,6 +6,7 @@ use base 'Catalyst::Controller::REST';
 
 use DBIx::Class::ResultClass::HashRefInflator;
 use DateTime::Format::DBI;
+use JSON::XS qw(encode_json);
 
 #
 # Sets the actions in this controller to be registered with no prefix
@@ -84,6 +85,10 @@ my ($self, $c) = @_;
         });
     }
 
+    if($c->req->params->{limit}) {
+        $events = $events->search(undef, { page => 1, rows => $c->req->params->{limit} });
+    }
+
     $events->result_class('DBIx::Class::ResultClass::HashRefInflator');
 
     my $dt_parser = DateTime::Format::DBI->new(
@@ -91,14 +96,9 @@ my ($self, $c) = @_;
     );
 
     my $limit = $c->req->params->{'limit'};
-    my $net_list = Osgood::EventList->new;
-    my $count = 0;
+    my @event_list;
     if (defined($events)) {
         while (my $event = $events->next) {
-            # Enforce limit this way, as prefetch breaks SQL limit
-            if (defined($limit) && $limit <= $count) {
-                $events = $events->search( undef, { rows => $limit } );
-            }
             # convert db event to net event
             my $params = {};
             if(scalar($event->{'parameters'})) {
@@ -107,23 +107,20 @@ my ($self, $c) = @_;
                 }
             }
 
-            my $net_event = Osgood::Event->new(
-                id    => $event->{'event_id'},
-                object    => $event->{'object'}->{'name'},
-                action    => $event->{'action'}->{'name'},
-                date_occurred => DateTime::Format::MySQL->parse_datetime($event->{'date_occurred'}),
-                params    => $params
-            );
-            # add net event to list
-            $net_list->add_to_events($net_event);
-            $count++;
+            push(@event_list, {
+                id => $event->{event_id},
+                object  => $event->{object}->{name},
+                action  => $event->{action}->{name},
+                date_occurred => $event->{date_occurred},
+                params => $params
+            });
         }
     }
 
     # set response type
     $c->response->content_type('application/json');
     # return serialized list
-    $c->response->body($net_list->freeze);
+    $c->response->body(encode_json(\@event_list));
 }
 
 =head2 event_POST
