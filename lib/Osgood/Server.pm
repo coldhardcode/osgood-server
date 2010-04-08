@@ -15,7 +15,7 @@ use Catalyst::Runtime '5.70';
 
 use Catalyst qw/-Debug ConfigLoader Static::Simple Params::Nested/;
 
-our $VERSION = '2.0.1';
+our $VERSION = '3.0.0';
 our $AUTHORITY = 'cpan:GPHAT';
 
 # Configure the application. 
@@ -46,7 +46,8 @@ Osgood::Server - Event Repository
 
 =head1 DESCRIPTION
 
-Osgood is a passive, persistent, stateless event repository.
+Osgood is a passive, persistent, stateless event repository. It could also
+be used as an message queue.
 
 * Passive: Osgood doesn't seek out events, it only waits for notification of
 them.
@@ -57,7 +58,7 @@ offline.
 * Stateless: Events in Osgood are read-only.  You cannot change them.
 
 What's all that fancy talk mean?  Osgood is a system wherein you record the
-fact that something happened.  A client library (L<Osgood::Client> that allows
+fact that something happened.  A client library (L<Osgood::Client>) allows
 you to send events to Osgood and to later retrieve them.
 
 Effectively we are talking about an implementation of the Publisher /
@@ -136,6 +137,7 @@ Cory 'G' Watson <gphat@cpan.org>
 =head1 CONTRIBUTORS
 
 Guillermo Roditi (groditi)
+
 Mike Eldridge (diz)
 
 =head1 COPYRIGHT AND LICENSE
@@ -150,7 +152,6 @@ itself.
 sub add_from_list {
     my ($self, $list) = @_;
 
-    my $iter = $list->iterator;
     # count events
     my $count = 0;
     my $error = undef;
@@ -158,8 +159,8 @@ sub add_from_list {
 	my $schema = $self->model('OsgoodDB')->schema;
 	$schema->txn_begin;
 
-    while (($iter->has_next) && (!defined($error))) {
-        my $event = $iter->next;
+    while (($list->has_next) && (!defined($error))) {
+        my $event = $list->next;
 
         # find or create the action
         my $action = $self->model('OsgoodDB::Action')->find_or_create({

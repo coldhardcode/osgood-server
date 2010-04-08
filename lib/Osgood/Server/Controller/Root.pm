@@ -131,7 +131,9 @@ sub event_POST {
 
     my $events = $c->req->data;
 
-    my $list = Osgood::EventList->unpack($events);
+    my $list = Osgood::EventList->new(
+        list => $c->req->data
+    );
 
     my ($count, $error) = $c->add_from_list($list);
 
